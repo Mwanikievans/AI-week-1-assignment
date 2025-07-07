@@ -18,3 +18,25 @@ CryptoBuddy: Ethereum info:
 
 You: exit
 👋 Bye! Remember: crypto is risky—do your own research!
+
+# Requirements
+
+Before running the code, install dependencies:
+# 🟢 How to Run
+
+Save it as crypto_buddy_app.py, then run:
+# ✅ Features
+
+    📡 Real-time data from CoinGecko
+
+    🔍 Understands queries like:
+
+        "Which crypto is trending?"
+
+        "What’s the most sustainable coin?"
+
+        "Should I invest in anything long-term?"
+
+    ♻️ Adds mock sustainability data
+
+    🤖 Friendly chatbot tone
