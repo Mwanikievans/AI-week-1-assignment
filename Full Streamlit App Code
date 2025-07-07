@@ -1,0 +1,89 @@
+# crypto_buddy_app.py
+
+import streamlit as st
+import requests
+
+# --- App Setup ---
+st.set_page_config(page_title="CryptoBuddy", page_icon="🤖", layout="centered")
+
+st.title("🤖 CryptoBuddy")
+st.markdown("Your friendly crypto analyst – combining **price trends** and **sustainability** to guide your investments!")
+
+st.markdown("---")
+
+# --- Sustainability Mock Data (since CoinGecko doesn't offer it) ---
+sustainability_data = {
+    "bitcoin": {"energy_use": "high", "sustainability_score": 3/10},
+    "ethereum": {"energy_use": "medium", "sustainability_score": 6/10},
+    "cardano": {"energy_use": "low", "sustainability_score": 8/10}
+}
+
+# --- Get Live Coin Data ---
+@st.cache_data(show_spinner=False)
+def fetch_crypto_data():
+    url = "https://api.coingecko.com/api/v3/coins/markets"
+    params = {
+        "vs_currency": "usd",
+        "ids": "bitcoin,ethereum,cardano",
+        "order": "market_cap_desc"
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return {coin['id']: coin for coin in response.json()}
+    else:
+        st.error("⚠️ Failed to fetch data from CoinGecko.")
+        return {}
+
+coin_data = fetch_crypto_data()
+
+# --- Helper: Analyze User Query ---
+def analyze_query(query):
+    query = query.lower()
+
+    # --- Most sustainable ---
+    if "sustainable" in query or "eco" in query:
+        best = max(sustainability_data, key=lambda x: sustainability_data[x]["sustainability_score"])
+        score = sustainability_data[best]["sustainability_score"] * 10
+        return f"🌿 Try **{best.title()}**! It has a top sustainability score of {score:.1f}/10 and uses minimal energy."
+
+    # --- Trending coins ---
+    elif "trending" in query or "rising" in query:
+        trending = [coin for coin, data in coin_data.items() if data['price_change_percentage_24h'] > 0]
+        return "📈 Trending up: " + ", ".join([c.title() for c in trending]) if trending else "📉 No coins are trending up right now."
+
+    # --- Investment advice ---
+    elif "invest" in query or "long-term" in query or "profit" in query:
+        good_coins = []
+        for coin, data in coin_data.items():
+            if (data['price_change_percentage_24h'] > 0 and 
+                data['market_cap_rank'] <= 5 and
+                sustainability_data[coin]["sustainability_score"] >= 0.6):
+                good_coins.append(coin)
+        if good_coins:
+            return f"💸 Consider investing in: {', '.join([c.title() for c in good_coins])} – profitable and eco-conscious!"
+        else:
+            return "🤷‍♂️ No coins currently meet all profitability and sustainability criteria."
+
+    # --- Specific coin info ---
+    else:
+        for coin in coin_data:
+            if coin in query:
+                d = coin_data[coin]
+                s = sustainability_data[coin]
+                return (f"🔍 **{coin.title()}** info:\n\n"
+                        f"- 💰 Price: ${d['current_price']:,}\n"
+                        f"- 📊 24h Change: {d['price_change_percentage_24h']:.2f}%\n"
+                        f"- 🔢 Market Rank: {d['market_cap_rank']}\n"
+                        f"- ⚡ Energy Use: {s['energy_use'].capitalize()}\n"
+                        f"- 🌱 Sustainability: {s['sustainability_score']*10}/10")
+        return "❓ I didn't understand that. Try asking about trending, sustainability, or specific coins like Bitcoin."
+
+# --- Chat Interface ---
+user_query = st.text_input("💬 Ask me anything about crypto trends or sustainability:")
+
+if user_query:
+    response = analyze_query(user_query)
+    st.markdown(f"**CryptoBuddy:** {response}")
+
+st.markdown("---")
+st.caption("🧠 Reminder: Crypto is risky—always do your own research before investing.")
