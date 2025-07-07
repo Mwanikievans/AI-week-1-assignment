@@ -20,11 +20,14 @@ You: exit
 👋 Bye! Remember: crypto is risky—do your own research!
 
 # Requirements
-
 Before running the code, install dependencies:
+pip install streamlit requests
+
 # 🟢 How to Run
 
 Save it as crypto_buddy_app.py, then run:
+streamlit run crypto_buddy_app.py
+
 # ✅ Features
 
     📡 Real-time data from CoinGecko
